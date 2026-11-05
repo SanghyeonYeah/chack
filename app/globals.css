@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* 디자인 토큰 원본: design/DESIGN.tour.md, design/DESIGN.pilgrim.md */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-on-primary: var(--c-on-primary);
+  --color-accent: var(--c-accent);
+  --color-line: var(--c-line);
+  --color-success: var(--c-success);
+  --color-error: var(--c-error);
+  --color-stamp: var(--c-stamp);
+  --font-serif: var(--font-serif-kr), "Noto Serif KR", serif;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --radius-card: var(--r-card);
+  --radius-btn: var(--r-btn);
+}
+
+:root,
+[data-service="tour"] {
+  --c-bg: #F5EFE3;          /* 한지 베이지 */
+  --c-surface: #FBF8F1;
+  --c-ink: #2A2017;         /* 먹색 */
+  --c-muted: #6B5B4B;
+  --c-primary: #7A4E26;     /* 따뜻한 갈색 */
+  --c-primary-hover: #653F1D;
+  --c-on-primary: #FFFBF4;
+  --c-accent: #86591F;      /* 황토 */
+  --c-line: #DDD0BA;
+  --c-success: #3F6B4A;
+  --c-error: #9C3F2A;
+  --c-stamp: #7A4E26;
+  --r-card: 16px;
+  --r-btn: 12px;
+}
+
+[data-service="pilgrim"] {
+  --c-bg: #FAF8F3;          /* 아이보리 */
+  --c-surface: #FFFFFF;
+  --c-ink: #1E2433;
+  --c-muted: #5E6573;
+  --c-primary: #22355B;     /* 남색 */
+  --c-primary-hover: #1A2947;
+  --c-on-primary: #FFFFFF;
+  --c-accent: #5B6679;      /* 회청색 */
+  --c-line: #E4E1D8;
+  --c-success: #2F5D50;
+  --c-error: #9B3B34;
+  --c-stamp: #22355B;
+  --r-card: 12px;
+  --r-btn: 10px;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;          /* 본문 기본. 최소 16px (DESIGN.md §3) */
+  line-height: 1.6;
+}
+:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 2px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 20px; border-radius: var(--r-btn);
+  font-size: 17px; font-weight: 600; transition: background-color .15s;
+}
+.btn-primary { background: var(--c-primary); color: var(--c-on-primary); }
+.btn-primary:hover { background: var(--c-primary-hover); }
+.btn-secondary { background: transparent; color: var(--c-primary); border: 1.5px solid var(--c-primary); }
+.card { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-card); padding: 20px; }
