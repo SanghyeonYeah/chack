@@ -22,6 +22,19 @@ function parseItem(raw) {
   return { code, chip_uid: uid, tagged_at: tagged };
 }
 
+/** 도장 요청·결과 로그 (14장). 실패해도 도장 처리에는 영향 없음 */
+async function log(sb, readerId, item, result, error) {
+  const { error: e } = await sb.from('stamp_logs').insert({
+    reader_id: readerId,
+    code: item.code,
+    chip_uid: item.chip_uid,
+    tagged_at: item.tagged_at,
+    result,
+    error,
+  });
+  if (e) console.error('[stamp_logs]', e.message);
+}
+
 /**
  * POST /api/reader/stamp
  * header: Authorization: Bearer <리더 토큰>
@@ -52,8 +65,10 @@ export async function POST(req) {
     });
     if (error) {
       console.error('[record_stamp]', error);
+      await log(sb, null, item, 'SERVER_ERROR', error.message);
       return json({ ok: false, error: 'SERVER_ERROR', results }, 500); // 처리된 건수만큼 results 반환
     }
+    await log(sb, data.reader_id ?? null, item, data.result, null);
     if (data.result === 'READER_INVALID' || data.result === 'READER_INACTIVE') {
       return json({ ok: false, error: data.result, results }, 401);
     }

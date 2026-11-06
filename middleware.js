@@ -1,26 +1,37 @@
+// 접속 주소로 관광지/순례를 판별해 /[service]/... 로 연결 (다른 파일 import 없음)
 import { NextResponse } from 'next/server';
-import { resolveService } from '@/lib/service';
 
-/**
- * 접속 주소로 관광지/순례를 판별한다.
- *  - 화면: /k/ABC → /tour/k/ABC 처럼 내부 경로로 바꿔 app/[service]/ 아래 화면을 연다
- *  - API(/api/*), 리더(/reader): 경로는 그대로, x-chak-service 헤더만 붙인다
- * 관광지 주소에서 /pilgrim/... 을 직접 열면 /tour/pilgrim/... 이 되어 404가 된다(교차 접근 차단).
- */
-export function middleware(req) {
-  const service = resolveService(req.headers.get('host'));
-  const headers = new Headers(req.headers);
+const SERVICES = ['tour', 'pilgrim'];
+const PASS = ['/reader', '/admin', '/super', '/dev', '/api'];
+
+const bare = (h) => (h || '').toLowerCase().split(':')[0];
+const hostList = (v) => (v || '').split(',').map((s) => bare(s.trim())).filter(Boolean);
+
+function serviceFromHost(hostHeader) {
+  const host = bare(hostHeader);
+  if (hostList(process.env.TOUR_HOSTS).includes(host)) return 'tour';
+  if (hostList(process.env.PILGRIM_HOSTS).includes(host)) return 'pilgrim';
+  if (host === 'pilgrim.localhost') return 'pilgrim';
+  return SERVICES.includes(process.env.DEFAULT_SERVICE) ? process.env.DEFAULT_SERVICE : 'tour';
+}
+
+export function middleware(request) {
+  const { pathname } = request.nextUrl;
+  const service = serviceFromHost(request.headers.get('host'));
+  const headers = new Headers(request.headers);
   headers.set('x-chak-service', service);
 
-  const { pathname } = req.nextUrl;
-  if (pathname.startsWith('/api/') || pathname === '/reader' || pathname.startsWith('/reader/')) {
+  if (PASS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next({ request: { headers } });
   }
-  const url = req.nextUrl.clone();
+  const first = pathname.split('/')[1];
+  if (SERVICES.includes(first)) return NextResponse.rewrite(new URL('/__chak_not_found', request.url));
+
+  const url = request.nextUrl.clone();
   url.pathname = `/${service}${pathname === '/' ? '' : pathname}`;
   return NextResponse.rewrite(url, { request: { headers } });
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|map|txt|woff2?)$).*)'],
 };

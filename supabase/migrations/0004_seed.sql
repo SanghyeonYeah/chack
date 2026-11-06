@@ -20,6 +20,9 @@ begin
   insert into public.regions (name, level, sort_order) values ('충청남도', 'sido', 1) returning id into v_sido;
   insert into public.regions (name, level, parent_id, sort_order) values ('아산시', 'sigungu', v_sido, 1) returning id into v_asan;
   insert into public.regions (name, level, parent_id, sort_order) values ('천안시', 'sigungu', v_sido, 2) returning id into v_cheonan;
+  -- 준비 중 지역 (비활성, T-U-03 "곧 열려요" 확인용)
+  insert into public.regions (name, level, parent_id, sort_order, is_active) values
+    ('공주시', 'sigungu', v_sido, 3, false), ('부여군', 'sigungu', v_sido, 4, false);
 
   insert into public.organizations (service, name) values ('tour', '현충사 [임시]') returning id into o_hc;
   insert into public.organizations (service, name) values ('tour', '외암민속마을 [임시]') returning id into o_oe;
@@ -48,9 +51,13 @@ begin
   select v_id, '[임시] 지점 ' || i, i, '[임시] 요약 설명', 36.810 + i * 0.0004, 127.150, true
     from generate_series(1, 3) as i;
 
-  insert into public.sites (service, organization_id, region_id, name, address, lat, lng, intro, sort_order, is_public)
-  values ('pilgrim', o_pg, v_asan, '아산 임시 성지', '충청남도 아산시 [임시 주소]', 36.790, 127.000, '[임시 소개글]', 1, true)
+  insert into public.sites (service, organization_id, region_id, name, address, lat, lng, intro, diocese,
+    history_text, mass_times, sort_order, is_public)
+  values ('pilgrim', o_pg, v_asan, '아산 임시 성지', '충청남도 아산시 [임시 주소]', 36.790, 127.000, '[임시 소개글]',
+    '[임시] 대전교구', '[임시] 성지 역사 · 순교자 이야기', '[임시] 주일 10:00', 1, true)
   returning id into v_id;
+  insert into public.priests (site_id, name, baptismal_name, role_title, greeting, consent_checked, is_visible)
+  values (v_id, '[임시] 신부님', '[임시]', '주임 신부', '[임시] 인사말', false, false);
   insert into public.checkpoints (site_id, name, sort_order, summary, lat, lng, is_public)
   select v_id, '[임시] 순례 지점 ' || i, i, '[임시] 요약 설명', 36.790 + i * 0.0004, 127.000, true
     from generate_series(1, 3) as i;
@@ -68,11 +75,11 @@ begin
 
   -- 시험용 키링
   perform public.issue_tokens('tour', 10, o_hc, 'seed');
-  perform public.issue_tokens('tour', 5, o_oe, 'seed');
-  perform public.issue_tokens('pilgrim', 5, o_pg, 'seed');
+  perform public.issue_tokens('tour', 10, o_oe, 'seed');
+  perform public.issue_tokens('pilgrim', 20, o_pg, 'seed');
 
   insert into public.verses (text, source, sort_order) values
-    ('[임시 구절 1] 관리자 화면에서 교체해 주세요', '[출처]', 1),
-    ('[임시 구절 2] 관리자 화면에서 교체해 주세요', '[출처]', 2),
-    ('[임시 구절 3] 관리자 화면에서 교체해 주세요', '[출처]', 3);
+    ('[예시 구절 1 — 관리자에서 입력]', '[예시]', 1),
+    ('[예시 구절 2 — 관리자에서 입력]', '[예시]', 2),
+    ('[예시 구절 3 — 관리자에서 입력]', '[예시]', 3);
 end $$;

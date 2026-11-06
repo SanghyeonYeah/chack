@@ -13,7 +13,7 @@ declare t text;
 begin
   foreach t in array array['regions','organizations','admins','sites','checkpoints','readers','tokens',
     'visits','completions','photos','notes','point_ledger','token_badges','token_views',
-    'priests','verses','settings'] loop
+    'priests','verses','settings','stamp_logs'] loop
     execute format('alter table public.%I enable row level security', t);
   end loop;
 end $$;
@@ -74,8 +74,8 @@ revoke insert, update, delete on public.visits, public.completions from anon, au
 
 -- 사진·메모·포인트·뱃지·열람 기록: 정책 없음 = 서버(secret key)만 접근
 -- (순례자 사진·메모는 최고 관리자도 열람 불가 — 기획서 10장)
-revoke all on public.photos, public.notes, public.point_ledger, public.token_badges, public.token_views
-  from anon, authenticated;
+revoke all on public.photos, public.notes, public.point_ledger, public.token_badges, public.token_views,
+  public.stamp_logs from anon, authenticated;
 revoke all on private.code_lookup_guard from anon, authenticated;
 
 -- 저장소: photos(비공개, 서버만) / media(공개, 관광지·지점 사진·도장·뱃지 이미지)

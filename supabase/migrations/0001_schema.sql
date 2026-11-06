@@ -70,6 +70,10 @@ create table public.sites (
   phone text,
   stamp_image_path text,
   base_points int check (base_points is null or base_points >= 0), -- 비우면 settings.base_points (B1)
+  diocese text,                        -- 성지: 소속 교구
+  history_text text,                   -- 성지: 역사 · 순교자 이야기
+  mass_times text,                     -- 성지: 미사 시간
+  group_contact text,                  -- 성지: 단체 순례 문의
   sort_order int not null default 0,
   is_public boolean not null default false,
   created_at timestamptz not null default now()
@@ -184,7 +188,7 @@ create table public.notes (
   id uuid primary key default gen_random_uuid(),
   token_id uuid not null references public.tokens(id),
   visit_id uuid not null unique references public.visits(id) on delete cascade,
-  body text not null check (char_length(body) <= 1000),
+  body text not null check (char_length(body) <= 500),
   created_at timestamptz not null default now()
 );
 
@@ -264,13 +268,26 @@ language sql stable set search_path = public as $$
   select coalesce((select (value #>> '{}')::boolean from public.settings where key = p_key), p_default)
 $$;
 
+-- 18. 도장 요청 로그 (문제 추적용, 14장)
+create table public.stamp_logs (
+  id uuid primary key default gen_random_uuid(),
+  reader_id uuid,
+  code text,
+  chip_uid text,
+  tagged_at timestamptz,
+  result text not null,
+  error text,
+  created_at timestamptz not null default now()
+);
+create index stamp_logs_created_idx on public.stamp_logs(created_at desc);
+
 -- 모든 테이블: updated_at 칸 + 자동 갱신
 do $$
 declare t text;
 begin
   foreach t in array array['regions','organizations','admins','sites','checkpoints','readers','tokens',
     'visits','completions','photos','notes','point_ledger','token_badges','token_views',
-    'priests','verses','settings'] loop
+    'priests','verses','settings','stamp_logs'] loop
     execute format('alter table public.%I add column if not exists updated_at timestamptz not null default now()', t);
     execute format('drop trigger if exists %I on public.%I', t || '_updated', t);
     execute format('create trigger %I before update on public.%I for each row execute function public.set_updated_at()', t || '_updated', t);

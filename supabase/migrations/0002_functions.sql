@@ -134,8 +134,8 @@ language sql stable set search_path = public as $$
 $$;
 
 -- ★ 도장 기록 (11.1 순서, 한 트랜잭션)
-create or replace function public.record_stamp(
-  p_reader_token text, p_code text, p_chip_uid text, p_tagged_at timestamptz
+create or replace function public.record_stamp_by_reader(
+  p_reader_id uuid, p_code text, p_chip_uid text, p_tagged_at timestamptz
 ) returns jsonb
 language plpgsql security definer set search_path = public, extensions as $$
 declare
@@ -162,7 +162,7 @@ declare
   v_result text;
 begin
   -- 1. 리더 확인
-  select * into v_reader from public.readers where token_hash = public.sha256_hex(p_reader_token);
+  select * into v_reader from public.readers where id = p_reader_id;
   if not found then return jsonb_build_object('result', 'READER_INVALID'); end if;
   if not v_reader.is_active or v_reader.checkpoint_id is null then
     return jsonb_build_object('result', 'READER_INACTIVE');
@@ -301,6 +301,18 @@ begin
     'bonuses', v_bonuses, 'visit_date', v_date);
 end $$;
 
+-- 리더 토큰으로 도장 기록 (/api/reader/stamp). 가상 리더(최고 관리자)는 record_stamp_by_reader를 직접 호출
+create or replace function public.record_stamp(
+  p_reader_token text, p_code text, p_chip_uid text, p_tagged_at timestamptz
+) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare v_id uuid;
+begin
+  select id into v_id from public.readers where token_hash = public.sha256_hex(p_reader_token);
+  if v_id is null then return jsonb_build_object('result', 'READER_INVALID'); end if;
+  return public.record_stamp_by_reader(v_id, p_code, p_chip_uid, p_tagged_at) || jsonb_build_object('reader_id', v_id);
+end $$;
+
 -- 분실 처리 + 기록 이전 (B5, 한 트랜잭션). p_actor_org: 기관 관리자면 기관 id, 최고 관리자면 null
 create or replace function public.transfer_token(p_old_code text, p_new_code text, p_actor_org uuid)
 returns jsonb
@@ -387,6 +399,7 @@ begin
     'public.reader_heartbeat(text,integer)',
     'public.region_all_completed(uuid,text,uuid,text)',
     'public.record_stamp(text,text,text,timestamp with time zone)',
+    'public.record_stamp_by_reader(uuid,text,text,timestamp with time zone)',
     'public.transfer_token(text,text,uuid)',
     'public.code_lookup_blocked(text)',
     'public.code_lookup_failed(text)'

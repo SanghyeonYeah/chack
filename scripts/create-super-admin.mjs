@@ -7,7 +7,7 @@ const secret = process.env.SUPABASE_SECRET_KEY;
 const email = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
 
 if (!url || !secret || !email) {
-  console.error('.env.local에 NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, SUPER_ADMIN_EMAIL을 넣어 주세요');
+  console.error('.env에 NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, SUPER_ADMIN_EMAIL을 넣어 주세요');
   process.exit(1);
 }
 
