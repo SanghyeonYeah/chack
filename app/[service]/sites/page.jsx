@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import SiteCard from '@/components/user/SiteCard';
 import { useService } from '@/components/user/ServiceProvider';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 import { getFlag, setFlag } from '@/lib/client/keyrings';
 import { km, rate } from '@/lib/format';
 
@@ -33,7 +33,7 @@ function Sites() {
 
   useEffect(() => {
     if (!ready) return;
-    api('/api/regions', { token: primary })
+    cachedApi('/api/regions', { token: primary, onCached: (d) => setRegions(d.regions) })
       .then((d) => setRegions(d.regions))
       .catch(() => setRegions([]));
   }, [ready, primary]);
@@ -45,7 +45,7 @@ function Sites() {
     if (!ready) return;
     setError(null);
     setSites(null);
-    api(`/api/sites${regionId ? `?region=${regionId}` : ''}`, { token: primary })
+    cachedApi(`/api/sites${regionId ? `?region=${regionId}` : ''}`, { token: primary, onCached: (d) => setSites(d.sites) })
       .then((d) => setSites(d.sites))
       .catch((e) => setError(errorText(e, t)));
   };

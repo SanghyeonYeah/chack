@@ -8,7 +8,7 @@ import Shell, { ErrorBox, Loading, Progress } from '@/components/user/Shell';
 import KakaoMap, { directionsUrl } from '@/components/KakaoMap';
 import { useService } from '@/components/user/ServiceProvider';
 import { PhotoPlaceholder } from '@/components/user/Stamp';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 import { mediaUrl } from '@/lib/media';
 import { md } from '@/lib/format';
 
@@ -22,7 +22,7 @@ export default function SitePage({ params }) {
 
   const load = () => {
     setError(null);
-    api(`/api/sites/${id}`, { token: primary })
+    cachedApi(`/api/sites/${id}`, { token: primary, onCached: setD })
       .then(setD)
       .catch((e) => setError(errorText(e, t)));
   };

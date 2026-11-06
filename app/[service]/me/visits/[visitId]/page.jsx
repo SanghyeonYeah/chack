@@ -7,7 +7,7 @@ import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import { useService } from '@/components/user/ServiceProvider';
 import { useUploads } from '@/components/user/UploadProvider';
 import { PhotoPlaceholder } from '@/components/user/Stamp';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, api, errorText } from '@/lib/client/api';
 import { mediaUrl } from '@/lib/media';
 import { daysAgo, full, md } from '@/lib/format';
 
@@ -23,7 +23,7 @@ export default function VisitPage({ params }) {
 
   const load = () => {
     setError(null);
-    api(`/api/visits/${visitId}`, { token: primary }).then(setD).catch((e) => setError(errorText(e, t)));
+    cachedApi(`/api/visits/${visitId}`, { token: primary, onCached: setD }).then(setD).catch((e) => setError(errorText(e, t)));
   };
   useEffect(() => {
     if (ready && primary) load();

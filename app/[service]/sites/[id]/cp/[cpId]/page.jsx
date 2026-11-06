@@ -7,7 +7,7 @@ import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import KakaoMap from '@/components/KakaoMap';
 import { useService } from '@/components/user/ServiceProvider';
 import { PhotoPlaceholder } from '@/components/user/Stamp';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 import { mediaUrl } from '@/lib/media';
 import { md, hm } from '@/lib/format';
 
@@ -20,7 +20,7 @@ export default function CheckpointPage({ params }) {
 
   const load = () => {
     setError(null);
-    api(`/api/sites/${id}`, { token: primary }).then(setD).catch((e) => setError(errorText(e, t)));
+    cachedApi(`/api/sites/${id}`, { token: primary, onCached: setD }).then(setD).catch((e) => setError(errorText(e, t)));
   };
   useEffect(() => {
     if (ready) load();

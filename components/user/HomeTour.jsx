@@ -8,7 +8,7 @@ import Shell from './Shell';
 import Onboarding from './Onboarding';
 import { useService } from './ServiceProvider';
 import { getFlag } from '@/lib/client/keyrings';
-import { api } from '@/lib/client/api';
+import { cachedApi } from '@/lib/client/api';
 import { Stamp } from './Stamp';
 
 export default function HomeTour() {
@@ -27,8 +27,9 @@ export default function HomeTour() {
       setSummary(null);
       return;
     }
-    api(`/api/tokens/${primary}/records`)
-      .then((d) => setSummary({ completed: d.completed_count, points: d.points }))
+    const apply = (d) => setSummary({ completed: d.completed_count, points: d.points });
+    cachedApi(`/api/tokens/${primary}/records`, { onCached: apply })
+      .then(apply)
       .catch(() => setSummary(null));
   }, [primary]);
 

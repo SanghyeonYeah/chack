@@ -7,7 +7,7 @@ import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import CodeEntry from '@/components/user/CodeEntry';
 import { useService } from '@/components/user/ServiceProvider';
 import { Badge } from '@/components/user/Stamp';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 import { removeKeyring, rememberKeyring } from '@/lib/client/keyrings';
 import { maskCode, md, rate } from '@/lib/format';
 
@@ -23,7 +23,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!ready || !primary) return;
     setD(null);
-    api(`/api/tokens/${primary}/summary`).then(setD).catch((e) => setError(errorText(e, t)));
+    cachedApi(`/api/tokens/${primary}/summary`, { onCached: setD }).then(setD).catch((e) => setError(errorText(e, t)));
   }, [ready, primary, t]);
 
   if (!ready) return <Shell><Loading /></Shell>;

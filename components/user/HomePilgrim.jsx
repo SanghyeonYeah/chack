@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Shell from './Shell';
 import { useService } from './ServiceProvider';
 import { getFlag, setFlag } from '@/lib/client/keyrings';
-import { api } from '@/lib/client/api';
+import { cachedApi } from '@/lib/client/api';
 
 const INTERVAL = 30_000;
 const FADE = 800;
@@ -22,7 +22,7 @@ export default function HomePilgrim() {
   const touch = useRef(null);
 
   useEffect(() => {
-    api('/api/verses').then((d) => setVerses(d.verses)).catch(() => setVerses([]));
+    cachedApi('/api/verses', { onCached: (d) => setVerses(d.verses) }).then((d) => setVerses(d.verses)).catch(() => setVerses([]));
   }, []);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function HomePilgrim() {
 
   useEffect(() => {
     if (!primary) return;
-    api(`/api/tokens/${primary}/records`)
+    cachedApi(`/api/tokens/${primary}/records`, { onCached: (d) => setCount(d.completed_count) })
       .then((d) => setCount(d.completed_count))
       .catch(() => setCount(null));
   }, [primary]);

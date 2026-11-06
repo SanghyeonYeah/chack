@@ -12,7 +12,7 @@ import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import CodeEntry from '@/components/user/CodeEntry';
 import { useService } from '@/components/user/ServiceProvider';
 import { useUploads } from '@/components/user/UploadProvider';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, api, errorText } from '@/lib/client/api';
 import { rememberKeyring, removeKeyring } from '@/lib/client/keyrings';
 import { hm, maskCode, md } from '@/lib/format';
 
@@ -44,7 +44,8 @@ function Me() {
     async (code) => {
       setError(null);
       try {
-        const r = await api(`/api/tokens/${code}/records`);
+        // 기억한 기록은 바로 보여 주되, 완주 화면 이동은 새 데이터로만 판단
+        const r = await cachedApi(`/api/tokens/${code}/records`, { onCached: (c) => !c.unseen?.length && setD(c) });
         if (r.unseen?.length) {
           router.replace(`/me/complete/${r.unseen[0]}`);
           return;

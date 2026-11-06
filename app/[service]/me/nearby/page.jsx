@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import SiteCard from '@/components/user/SiteCard';
 import { useService } from '@/components/user/ServiceProvider';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 
 export default function NearbyPage() {
   return (
@@ -27,7 +27,7 @@ function Nearby() {
 
   useEffect(() => {
     if (!ready || !site) return;
-    api(`/api/sites/${site}/nearby`, { token: primary }).then(setD).catch((e) => setError(errorText(e, t)));
+    cachedApi(`/api/sites/${site}/nearby`, { token: primary, onCached: setD }).then(setD).catch((e) => setError(errorText(e, t)));
   }, [ready, primary, site, t]);
 
   if (error) return <Shell><ErrorBox message={error} /></Shell>;

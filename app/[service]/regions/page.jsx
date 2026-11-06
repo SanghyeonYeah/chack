@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Shell, { ErrorBox, Loading } from '@/components/user/Shell';
 import { useService } from '@/components/user/ServiceProvider';
-import { api, errorText } from '@/lib/client/api';
+import { cachedApi, errorText } from '@/lib/client/api';
 import { getFlag, setFlag } from '@/lib/client/keyrings';
 import { rate } from '@/lib/format';
 
@@ -18,14 +18,16 @@ export default function RegionsPage() {
 
   const load = () => {
     setError(null);
-    api('/api/regions', { token: primary })
-      .then((d) => {
-        setRegions(d.regions);
-        const sidos = d.regions.filter((r) => r.level === 'sido');
-        const last = getFlag(service, 'region');
-        const lastParent = d.regions.find((r) => r.id === last)?.parent_id;
-        setSido(lastParent ?? sidos.find((s) => s.total > 0)?.id ?? sidos[0]?.id ?? null);
-      })
+    const apply = (d) => {
+      setRegions(d.regions);
+      const sidos = d.regions.filter((r) => r.level === 'sido');
+      const last = getFlag(service, 'region');
+      const lastParent = d.regions.find((r) => r.id === last)?.parent_id;
+      // 이미 고른 도가 있으면 새 데이터가 와도 유지
+      setSido((cur) => cur ?? lastParent ?? sidos.find((s) => s.total > 0)?.id ?? sidos[0]?.id ?? null);
+    };
+    cachedApi('/api/regions', { token: primary, onCached: apply })
+      .then(apply)
       .catch((e) => setError(errorText(e, t)));
   };
   useEffect(() => {
