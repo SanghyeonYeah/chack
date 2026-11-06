@@ -74,10 +74,10 @@ chak-web/
 ## Vercel 배포
 
 1. GitHub에 올리고 Vercel 프로젝트에 연결합니다(.env.local은 올라가지 않음).
-2. Settings → Domains에 임시 주소 2개 추가 (예: `chak-tour.vercel.app`, `chak-pilgrim.vercel.app`).
+2. Settings → Domains: 관광 웹 = `chack-gamma.vercel.app`. 순례 웹 주소는 아직 없음(정해지면 추가).
 3. Settings → Environment Variables에 `.env.local` 값을 넣고 주소 목록을 바꿉니다.
-   - `TOUR_HOSTS=chak-tour.vercel.app,tour.localhost`
-   - `PILGRIM_HOSTS=chak-pilgrim.vercel.app,pilgrim.localhost`
+   - `TOUR_HOSTS=chack-gamma.vercel.app,tour.localhost`
+   - `PILGRIM_HOSTS=pilgrim.localhost` (순례 주소가 정해지면 맨 앞에 추가)
    - `SUPER_ADMIN_*`은 넣지 않아도 됩니다.
 4. 카카오 개발자 콘솔 Web 사이트 도메인에도 두 주소를 등록합니다.
 
